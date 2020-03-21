@@ -1,0 +1,9 @@
+1 Find expected number of immigrants on a given date on a given airport.
+2 Find average delay for each flight.
+3 Find the aircraft details of aircrafts owned by an airline based on years left in service.
+4 Passenger IDs of all people who travelled from one given place to another on a given date.
+5 Find all flights available on a given day for a given source and destination airport.
+6 Cost of flights from given source and destination airports.
+7 Sort airports based on the latest date on which any of their runways were checked.
+8 No of passengers on a given airport for a given time span.
+9 Passengers who flew for more than some given frequency with each airline.

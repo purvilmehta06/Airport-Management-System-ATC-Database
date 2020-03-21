@@ -1,0 +1,2 @@
+1 Update an existing passenger's name.
+2 Update cost of a flight.
