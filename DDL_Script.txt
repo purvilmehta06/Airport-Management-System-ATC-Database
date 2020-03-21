@@ -1,0 +1,194 @@
+CREATE TABLE Airport
+(
+  Airport_Code CHAR(3) NOT NULL,
+  Airport_Name VARCHAR NOT NULL,
+  NoOfRunways INT NOT NULL,
+  NoOfTerminals INT NOT NULL,
+  NoOfGates INT NOT NULL,
+  Location VARCHAR NOT NULL,
+  States_Country VARCHAR NOT NULL,
+  PRIMARY KEY (Airport_Code),
+  UNIQUE (Airport_Name)
+  
+);
+
+CREATE TABLE Commercial_Shop
+(
+  Shop_Name VARCHAR NOT NULL,
+  Owner_Name VARCHAR NOT NULL,
+  Revenue INT NOT NULL,
+  Airport_Code CHAR(3) NOT NULL,
+  PRIMARY KEY (Shop_Name, Airport_Code),
+  FOREIGN KEY (Airport_Code) REFERENCES Airport(Airport_Code) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+CREATE TABLE Runway_Maintenance
+(
+  RunwayNo INT NOT NULL,
+  Officer_name VARCHAR NOT NULL,
+  Check_Date TIMESTAMP NOT NULL,
+  Airport_Code CHAR(3) NOT NULL,
+  PRIMARY KEY (RunwayNo, Check_Date, Airport_Code),
+  FOREIGN KEY (Airport_Code) REFERENCES Airport(Airport_Code) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+CREATE TABLE Employee
+(
+  Emp_ID INT NOT NULL,
+  Emp_Name VARCHAR NOT NULL,
+  Salary INT NOT NULL,
+  Position VARCHAR NOT NULL,
+  Department_Name VARCHAR NOT NULL,
+  Airport_Code CHAR(3) NOT NULL,
+  PRIMARY KEY (Emp_ID, Airport_Code),
+  FOREIGN KEY (Airport_Code) REFERENCES Airport(Airport_Code) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+CREATE TABLE Availability_Code
+(
+  Monday BOOLEAN NOT NULL,
+  Tuesday BOOLEAN NOT NULL,
+  Wednesday BOOLEAN NOT NULL,
+  Thursday BOOLEAN NOT NULL,
+  Friday BOOLEAN NOT NULL,
+  Saturday BOOLEAN NOT NULL,
+  Sunday BOOLEAN NOT NULL,
+  Day_Code INT NOT NULL,
+  PRIMARY KEY (Day_Code)
+);
+
+CREATE TABLE Passenger
+(
+  Passenger_ID INT NOT NULL,
+  Passenger_Name VARCHAR NOT NULL,
+  Nationality VARCHAR NOT NULL,
+  PassportNo VARCHAR NOT NULL,
+  PRIMARY KEY (Passenger_ID),
+  UNIQUE (PassportNo)
+);
+
+CREATE TABLE Aircraft
+(
+  Aircraft_Type VARCHAR NOT NULL,
+  Capacity INT NOT NULL,
+  LifeTime INT NOT NULL,
+  PRIMARY KEY (Aircraft_Type)
+);
+
+CREATE TABLE Airlines
+(
+  Airline_Code VARCHAR NOT NULL,
+  Airline_Name VARCHAR NOT NULL,
+  PRIMARY KEY (Airline_Code)
+);
+
+CREATE TABLE Flight_Time_Table
+(
+  Flight_Code VARCHAR NOT NULL,
+  Duration_in_hours FLOAT NOT NULL,
+  Sch_Dep_Time TIME NOT NULL,
+  Sch_Arr_Terminal VARCHAR NOT NULL,
+  Sch_Dep_Terminal VARCHAR NOT NULL,
+  Flight_Type VARCHAR NOT NULL,
+  Src_Airport_Code CHAR(3) NOT NULL,
+  Des_Airport_Code CHAR(3) NOT NULL,
+  Day_Code INT NOT NULL,
+  Aircraft_Type VARCHAR NOT NULL,
+  Airline_Code VARCHAR NOT NULL,
+  PRIMARY KEY (Flight_Code),
+  FOREIGN KEY (Src_Airport_Code) REFERENCES Airport(Airport_Code) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY (Des_Airport_Code) REFERENCES Airport(Airport_Code) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY (Day_Code) REFERENCES Availability_Code(Day_Code) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY (Aircraft_Type) REFERENCES Aircraft(Aircraft_Type) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY (Airline_Code) REFERENCES Airlines(Airline_Code) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+CREATE TABLE Booking
+(
+  PNR VARCHAR NOT NULL,
+  VisaType VARCHAR NOT NULL,
+  Exp_Dep_Date DATE NOT NULL,
+  Exp_Arr_Date DATE NOT NULL,  
+  Class VARCHAR NOT NULL,
+  Flight_Code VARCHAR NOT NULL,
+  Passenger_ID INT NOT NULL,
+  PRIMARY KEY (PNR),
+  FOREIGN KEY (Flight_Code) REFERENCES Flight_Time_Table(Flight_Code) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY (Passenger_ID) REFERENCES Passenger(Passenger_ID) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+CREATE TABLE Baggage
+(
+  BaggageNo INT NOT NULL,
+  Weight FLOAT NOT NULL,
+  PNR VARCHAR NOT NULL,
+  PRIMARY KEY (BaggageNo, PNR),
+  FOREIGN KEY (PNR) REFERENCES Booking(PNR) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE Actual_Arr_Dep
+(
+  Flight_Code VARCHAR NOT NULL,  
+  Dep_TimeStamp TIMESTAMP NOT NULL,
+  Arr_TimeStamp TIMESTAMP,
+  Arr_Terminal VARCHAR,
+  Dep_Terminal VARCHAR NOT NULL,
+  Arr_Gate INT,
+  Dep_Gate INT NOT NULL,
+  Arr_Runway INT,
+  Dep_runway INT NOT NULL,
+  PRIMARY KEY (Dep_TimeStamp, Flight_Code),
+  FOREIGN KEY (Flight_Code) REFERENCES Flight_Time_Table(Flight_Code) ON DELETE RESTRICT ON UPDATE CASCADE,
+  UNIQUE (Flight_Code, Arr_TimeStamp)
+);
+
+CREATE TABLE Physical_Instance_Of_Aircraft
+(
+  Aircraft_No INT NOT NULL,
+  Manufacturing_Date TIMESTAMP NOT NULL,
+  Aircraft_Type VARCHAR NOT NULL,
+  Airline_Code VARCHAR NOT NULL,
+  PRIMARY KEY (Aircraft_No, Aircraft_Type),
+  FOREIGN KEY (Aircraft_Type) REFERENCES Aircraft(Aircraft_Type) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY (Airline_Code) REFERENCES Airlines(Airline_Code) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+CREATE TABLE Aircraft_Used
+(
+  Dep_TimeStamp TIMESTAMP NOT NULL,
+  Flight_Code VARCHAR NOT NULL,
+  Aircraft_No INT NOT NULL,
+  Aircraft_Type VARCHAR NOT NULL,
+  PRIMARY KEY (Dep_TimeStamp, Flight_Code, Aircraft_No, Aircraft_Type),
+  FOREIGN KEY (Dep_TimeStamp, Flight_Code) REFERENCES Actual_Arr_Dep(Dep_TimeStamp, Flight_Code) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY (Aircraft_No, Aircraft_Type) REFERENCES Physical_Instance_Of_Aircraft(Aircraft_No, Aircraft_Type) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+CREATE TABLE Pilots
+(
+  Pilot_Name VARCHAR NOT NULL,
+  Pilot_ID INT NOT NULL,
+  Locality VARCHAR NOT NULL,
+  Airline_Code VARCHAR NOT NULL,
+  PRIMARY KEY (Pilot_ID),
+  FOREIGN KEY (Airline_Code) REFERENCES Airlines(Airline_Code) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+CREATE TABLE Prices
+(
+  Class VARCHAR NOT NULL,
+  Cost INT NOT NULL,
+  Flight_Code VARCHAR NOT NULL,
+  PRIMARY KEY (Class, Flight_Code),
+  FOREIGN KEY (Flight_Code) REFERENCES Flight_Time_Table(Flight_Code) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+CREATE TABLE Flight_Flew
+(
+  Pilot_ID INT NOT NULL,
+  Dep_TimeStamp TIMESTAMP NOT NULL,
+  Flight_Code VARCHAR NOT NULL,
+  PRIMARY KEY (Pilot_ID, Dep_TimeStamp, Flight_Code),
+  FOREIGN KEY (Pilot_ID) REFERENCES Pilots(Pilot_ID) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY (Dep_TimeStamp, Flight_Code) REFERENCES Actual_Arr_Dep(Dep_TimeStamp, Flight_Code) ON DELETE RESTRICT ON UPDATE CASCADE
+);

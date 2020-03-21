@@ -1,0 +1,13 @@
+CREATE or replace function process_price_history()
+returns trigger as $flight_price_history$
+BEGIN
+INSERT INTO Flight_PRICE_HISTORY
+VALUES(OLD.flight_code,OLD.class, OLD.cost,now());
+END;
+$flight_price_history$
+Language plpgsql;
+
+CREATE TRIGGER flight_price_history
+AFTER UPDATE OF cost
+ON prices
+FOR EACH ROW Execute procedure process_price_history();
