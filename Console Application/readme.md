@@ -1,4 +1,4 @@
-#Procedure
+Procedure
 There are 5 files required for the console.
 
 1) The (*_doc.txt) files contain the description of the in built queries and updates/inserts.
